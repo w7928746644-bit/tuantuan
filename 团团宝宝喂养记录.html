@@ -5,1128 +5,1090 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="团团喂养" />
-  <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-title" content="团团喂养记录" />
   <title>团团宝宝喂养记录</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <style>
     :root {
-      --bg-primary: #F2F2F7;
-      --bg-secondary: #FFFFFF;
-      --bg-tertiary: #E5E5EA;
-      --text-primary: #000000;
-      --text-secondary: #8E8E93;
-      --text-tertiary: #AEAEB2;
-      --accent-blue: #007AFF;
-      --accent-pink: #FF2D55;
-      --accent-orange: #FF9500;
-      --accent-green: #34C759;
-      --border-color: rgba(60, 60, 67, 0.12);
-      --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-      --tab-bg: rgba(249, 249, 249, 0.92);
+      --bg: #F2F2F7;
+      --card: #FFFFFF;
+      --card-2: #F9F9FB;
+      --text: #000000;
+      --text-2: #6C6C70;
+      --sep: rgba(60, 60, 67, 0.14);
+      --blue: #007AFF;
+      --pink: #FF2D55;
+      --purple: #AF52DE;
+      --teal: #32ADE6;
+      --brown: #A2845E;
+      --green: #34C759;
+      --orange: #FF9500;
+      --radius: 14px;
+      --safe-top: env(safe-area-inset-top, 12px);
+      --safe-bottom: env(safe-area-inset-bottom, 16px);
     }
 
     @media (prefers-color-scheme: dark) {
-      :root {
-        --bg-primary: #000000;
-        --bg-secondary: #1C1C1E;
-        --bg-tertiary: #2C2C2E;
-        --text-primary: #FFFFFF;
-        --text-secondary: #98989D;
-        --text-tertiary: #636366;
-        --accent-blue: #0A84FF;
-        --accent-pink: #FF375F;
-        --accent-orange: #FF9F0A;
-        --accent-green: #30D158;
-        --border-color: rgba(84, 84, 88, 0.35);
-        --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-        --tab-bg: rgba(28, 28, 30, 0.92);
+      :root:not([data-theme="light"]) {
+        --bg: #000000;
+        --card: #1C1C1E;
+        --card-2: #2C2C2E;
+        --text: #FFFFFF;
+        --text-2: #98989F;
+        --sep: rgba(84, 84, 88, 0.45);
       }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #000000;
+      --card: #1C1C1E;
+      --card-2: #2C2C2E;
+      --text: #FFFFFF;
+      --text-2: #98989F;
+      --sep: rgba(84, 84, 88, 0.45);
+    }
+
+    :root[data-theme="light"] {
+      --bg: #F2F2F7;
+      --card: #FFFFFF;
+      --card-2: #F9F9FB;
+      --text: #000000;
+      --text-2: #6C6C70;
+      --sep: rgba(60, 60, 67, 0.14);
     }
 
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-
-    input, textarea {
-      user-select: text;
     }
 
     body {
       margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
-      background-color: var(--bg-primary);
-      color: var(--text-primary);
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: calc(82px + env(safe-area-inset-bottom));
-      -webkit-font-smoothing: antialiased;
+      padding: calc(var(--safe-top) + 10px) 16px calc(var(--safe-bottom) + 84px);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
     }
 
-    .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: var(--tab-bg);
-      backdrop-filter: saturate(180%) blur(20px);
-      -webkit-backdrop-filter: saturate(180%) blur(20px);
-      padding: 12px 16px;
-      border-bottom: 0.5px solid var(--border-color);
+    .nav-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 12px;
     }
 
-    .header-title {
-      font-size: 20px;
+    .nav-title {
+      font-size: 28px;
       font-weight: 700;
-      letter-spacing: -0.4px;
+      letter-spacing: -0.5px;
+      margin: 0;
     }
 
-    .sync-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      font-weight: 500;
-      padding: 4px 10px;
+    .nav-sub {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-top: 2px;
+    }
+
+    .pill-btn {
+      background: var(--card);
+      color: var(--blue);
+      border: 1px solid var(--sep);
       border-radius: 999px;
-      background: var(--bg-tertiary);
-      color: var(--text-secondary);
-      cursor: pointer;
-    }
-
-    .sync-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--text-secondary);
-    }
-    .sync-dot.online { background: var(--accent-green); }
-    .sync-dot.syncing { background: var(--accent-orange); animation: pulse 1s infinite; }
-    .sync-dot.offline { background: var(--accent-pink); }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.35; }
-    }
-
-    .container {
-      max-width: 540px;
-      margin: 0 auto;
-      padding: 14px 16px;
-    }
-
-    .tab-page { display: none; }
-    .tab-page.active { display: block; }
-
-    .status-banner {
-      background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
-      color: #FFFFFF;
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 6px 18px rgba(0, 122, 255, 0.22);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .status-banner-left { flex: 1; min-width: 0; }
-    .status-label { font-size: 12px; opacity: 0.85; margin-bottom: 4px; }
-    .status-main { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-    .status-sub {
-      font-size: 12px;
-      opacity: 0.92;
-      margin-top: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .reminder-trigger-btn {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      color: #FFFFFF;
-      border-radius: 12px;
-      padding: 8px 11px;
-      font-size: 12px;
+      padding: 6px 12px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      flex-shrink: 0;
-    }
-    .reminder-trigger-btn:active { transform: scale(0.96); }
-    .reminder-trigger-btn.due {
-      background: #FF3B30;
-      border-color: #FFFFFF;
-      animation: pulse 1.2s infinite;
     }
 
     .card {
-      background: var(--bg-secondary);
-      border-radius: 16px;
-      padding: 16px;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 14px;
       margin-bottom: 14px;
-      box-shadow: var(--card-shadow);
+      border: 0.5px solid var(--sep);
     }
 
-    .card-title {
-      font-size: 15px;
+    .section-title {
+      font-size: 13px;
       font-weight: 600;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      color: var(--text-2);
+      text-transform: uppercase;
+      margin: 18px 0 8px 4px;
     }
 
-    .summary-grid {
+    .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
+      margin-bottom: 14px;
     }
 
-    .summary-item {
-      background: var(--bg-primary);
-      border-radius: 12px;
-      padding: 10px 8px;
-      text-align: center;
+    .kpi-box {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 12px;
+      border: 0.5px solid var(--sep);
     }
 
-    .summary-val { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
-    .summary-name { font-size: 11px; color: var(--text-secondary); }
-
-    .timer-display { text-align: center; padding: 10px 0 14px; }
-    .timer-clock {
-      font-size: 40px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 1px;
-    }
-
-    .timer-side-badge {
-      display: inline-block;
+    .kpi-label {
       font-size: 12px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: var(--bg-primary);
-      color: var(--accent-pink);
+      color: var(--text-2);
+    }
+
+    .kpi-val {
+      font-size: 22px;
+      font-weight: 700;
       margin-top: 4px;
     }
 
-    .timer-controls {
+    .kpi-meta {
+      font-size: 11px;
+      color: var(--text-2);
+      margin-top: 2px;
+    }
+
+    .breast-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-bottom: 10px;
+    }
+
+    .breast-box {
+      background: var(--card-2);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      border: 0.5px solid var(--sep);
+    }
+
+    .timer-display {
+      font-size: 26px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      margin: 6px 0;
     }
 
     .btn {
+      width: 100%;
       border: none;
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: transform 0.1s, opacity 0.15s;
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn-pink { background: rgba(255, 45, 85, 0.14); color: var(--accent-pink); }
-    .btn-pink.active { background: var(--accent-pink); color: #FFFFFF; }
-    .btn-blue { background: var(--accent-blue); color: #FFFFFF; }
-    .btn-orange { background: rgba(255, 149, 0, 0.15); color: var(--accent-orange); }
-    .btn-green { background: rgba(52, 199, 89, 0.15); color: var(--accent-green); }
-    .btn-gray { background: var(--bg-primary); color: var(--text-primary); }
-    .btn-block { width: 100%; }
-
-    .pill-row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .quick-pill {
-      flex: 1;
-      min-width: 66px;
-      background: var(--bg-primary);
-      border: none;
-      border-radius: 11px;
-      padding: 10px 6px;
+      border-radius: 10px;
+      padding: 10px 12px;
       font-size: 14px;
       font-weight: 600;
-      color: var(--text-primary);
       cursor: pointer;
+      color: #fff;
+    }
+
+    .btn-pink { background: var(--pink); }
+    .btn-purple { background: var(--purple); }
+    .btn-blue { background: var(--blue); }
+    .btn-green { background: var(--green); }
+    .btn-orange { background: var(--orange); }
+    .btn-gray { background: var(--card-2); color: var(--text); border: 0.5px solid var(--sep); }
+
+    .formula-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      background: var(--card-2);
+      border-radius: 10px;
+      border: 0.5px solid var(--sep);
+      overflow: hidden;
+    }
+
+    .stepper button {
+      width: 36px;
+      height: 38px;
+      border: none;
+      background: transparent;
+      color: var(--blue);
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .stepper input {
+      width: 66px;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
       text-align: center;
     }
-    .quick-pill:active, .quick-pill.selected {
-      background: var(--accent-blue);
-      color: #FFFFFF;
+
+    .diaper-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
 
-    .custom-input-row { display: flex; gap: 8px; margin-top: 10px; }
-    .ios-input {
-      flex: 1;
-      background: var(--bg-primary);
-      border: 1px solid var(--border-color);
-      border-radius: 11px;
-      padding: 10px 12px;
-      font-size: 15px;
-      color: var(--text-primary);
-      outline: none;
-    }
-
-    .diaper-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .record-list { display: flex; flex-direction: column; gap: 10px; }
-    .record-item {
+    .log-item {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 10px 12px;
-      background: var(--bg-primary);
-      border-radius: 12px;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 0.5px solid var(--sep);
     }
-    .record-left { display: flex; align-items: center; gap: 10px; }
-    .record-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+
+    .log-item:last-child {
+      border-bottom: none;
+    }
+
+    .log-main {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .log-sub {
+      font-size: 12px;
+      color: var(--text-2);
+      margin-top: 2px;
+    }
+
+    .log-right {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      background: var(--bg-secondary);
+      gap: 10px;
+      text-align: right;
     }
-    .record-title { font-size: 14px; font-weight: 600; }
-    .record-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-    .delete-btn {
+
+    .log-time {
+      font-size: 13px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .del-btn {
       background: transparent;
       border: none;
-      color: var(--text-tertiary);
-      font-size: 16px;
-      padding: 6px;
+      color: var(--pink);
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .archive-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+    }
+
+    .day-chip {
+      flex: 0 0 auto;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 0.5px solid var(--sep);
+      color: var(--text-2);
+      font-size: 12px;
+      font-weight: 600;
       cursor: pointer;
     }
 
-    .chart-box { width: 100%; height: 190px; margin-top: 8px; }
-
-    .tab-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 60;
-      background: var(--tab-bg);
-      backdrop-filter: saturate(180%) blur(20px);
-      -webkit-backdrop-filter: saturate(180%) blur(20px);
-      border-top: 0.5px solid var(--border-color);
-      display: flex;
-      justify-content: space-around;
-      padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+    .day-chip.active {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
     }
 
-    .tab-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 10px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    .tab-item.active { color: var(--accent-blue); }
-    .tab-icon { font-size: 21px; line-height: 1.1; }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      z-index: 100;
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-    }
-    .modal-backdrop.show { display: flex; }
-
-    .modal-sheet {
-      width: 100%;
-      max-width: 540px;
-      background: var(--bg-secondary);
-      border-radius: 20px 20px 0 0;
-      padding: 18px 16px calc(24px + env(safe-area-inset-bottom));
-      animation: slideUp 0.22s ease-out;
-      max-height: 88vh;
-      overflow-y: auto;
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-    .modal-title { font-size: 17px; font-weight: 700; }
-
-    .switch-row {
+    .form-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 10px 0;
-      border-bottom: 0.5px solid var(--border-color);
-      margin-bottom: 12px;
+      border-bottom: 0.5px solid var(--sep);
+      gap: 10px;
     }
 
-    .mode-switch {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: var(--bg-primary);
-      padding: 3px;
-      border-radius: 10px;
-      margin-bottom: 12px;
+    .form-row:last-child {
+      border-bottom: none;
     }
-    .mode-btn {
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      font-size: 13px;
-      font-weight: 600;
-      padding: 7px 8px;
+
+    input[type="text"], input[type="time"], input[type="number"], select {
+      background: var(--card-2);
+      color: var(--text);
+      border: 0.5px solid var(--sep);
       border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 14px;
+    }
+
+    .tab-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--card);
+      border-top: 0.5px solid var(--sep);
+      padding: 8px 12px calc(var(--safe-bottom) + 6px);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      z-index: 20;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-2);
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
       cursor: pointer;
     }
-    .mode-btn.active {
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+
+    .tab-btn.active {
+      color: var(--blue);
+    }
+
+    .tab-icon {
+      font-size: 18px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      margin-right: 5px;
     }
 
     .toast {
       position: fixed;
-      top: calc(64px + env(safe-area-inset-top));
+      top: calc(var(--safe-top) + 12px);
       left: 50%;
-      transform: translateX(-50%) translateY(-16px);
+      transform: translateX(-50%);
       background: rgba(28, 28, 30, 0.92);
-      color: #FFFFFF;
-      padding: 9px 16px;
+      color: #fff;
+      padding: 8px 16px;
       border-radius: 999px;
       font-size: 13px;
-      font-weight: 500;
-      z-index: 200;
+      font-weight: 600;
+      z-index: 50;
       opacity: 0;
+      transition: opacity 0.2s ease;
       pointer-events: none;
-      transition: all 0.22s ease;
-      white-space: nowrap;
     }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    .alarm-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.72);
-      z-index: 300;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .alarm-overlay.show { display: flex; }
-    .alarm-card {
-      background: var(--bg-secondary);
-      border-radius: 22px;
-      padding: 24px 20px;
-      width: 100%;
-      max-width: 340px;
-      text-align: center;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+    .toast.show {
+      opacity: 1;
     }
   </style>
 </head>
 <body>
+  <div id="toast" class="toast"></div>
 
-  <header class="header">
-    <div class="header-title">🍼 团团喂养记录</div>
-    <div class="sync-pill" onclick="manualSync()">
-      <span class="sync-dot" id="syncDot"></span>
-      <span id="syncText">连接中...</span>
-    </div>
-  </header>
-
-  <div class="toast" id="toast"></div>
-
-  <!-- Alarm Modal -->
-  <div class="alarm-overlay" id="alarmOverlay">
-    <div class="alarm-card">
-      <div style="font-size: 44px; margin-bottom: 8px;">⏰🍼</div>
-      <div style="font-size: 19px; font-weight: 700; margin-bottom: 6px;">团团该喝奶啦！</div>
-      <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;" id="alarmDesc">
-        已到达设定的喂奶提醒时间
-      </div>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn btn-gray" style="flex:1;" onclick="snoozeReminder(15)">稍后15分钟</button>
-        <button class="btn btn-blue" style="flex:1;" onclick="dismissAlarm()">知道了</button>
+  <div class="nav-header">
+    <div>
+      <h1 class="nav-title">团团宝宝喂养记录</h1>
+      <div class="nav-sub" id="subtitleInfo">
+        <span class="status-dot"></span>本机自动保存 · 每日自动归档
       </div>
     </div>
+    <button class="pill-btn" onclick="toggleTheme()">🌙 主题</button>
   </div>
 
-  <!-- Reminder Settings Sheet -->
-  <div class="modal-backdrop" id="reminderModal" onclick="closeReminderModal(event)">
-    <div class="modal-sheet" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <div class="modal-title">⏰ 喂奶推送提醒设置</div>
-        <button class="btn btn-gray" style="padding: 6px 12px; font-size: 13px;" onclick="closeReminderModal()">完成</button>
+  <!-- 页面 1: 今日记录 -->
+  <section id="view-today">
+    <div class="kpi-grid">
+      <div class="kpi-box">
+        <div class="kpi-label">今日母乳时长</div>
+        <div class="kpi-val" id="kpiBreast">0分</div>
+        <div class="kpi-meta" id="kpiBreastDetail">左 0m · 右 0m</div>
       </div>
+      <div class="kpi-box">
+        <div class="kpi-label">今日奶粉总量</div>
+        <div class="kpi-val" id="kpiFormula">0 ml</div>
+        <div class="kpi-meta" id="kpiFormulaCount">共 0 次</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">今日大小便</div>
+        <div class="kpi-val" id="kpiDiaper">0 次</div>
+        <div class="kpi-meta" id="kpiDiaperDetail">💧 0 · 💩 0</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">距上次喂奶</div>
+        <div class="kpi-val" id="kpiSinceFeed">--</div>
+        <div class="kpi-meta" id="kpiLastFeedTime">暂无喂奶记录</div>
+      </div>
+    </div>
 
-      <div class="switch-row">
+    <div class="section-title">🍼 母乳计时（左右分开）</div>
+    <div class="card">
+      <div class="breast-grid">
+        <div class="breast-box">
+          <div style="font-weight:600;color:var(--pink);">左侧母乳</div>
+          <div class="timer-display" id="timer-left">00:00</div>
+          <button class="btn btn-pink" id="btn-left" onclick="toggleBreast('left')">开始左侧</button>
+        </div>
+        <div class="breast-box">
+          <div style="font-weight:600;color:var(--purple);">右侧母乳</div>
+          <div class="timer-display" id="timer-right">00:00</div>
+          <button class="btn btn-purple" id="btn-right" onclick="toggleBreast('right')">开始右侧</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">🍼 奶粉记录</div>
+    <div class="card">
+      <div style="font-size:13px;color:var(--text-2);">可自由调整每次冲调量（ml）：</div>
+      <div class="formula-row">
+        <div class="stepper">
+          <button type="button" onclick="stepFormula(-10)">−</button>
+          <input type="number" id="formulaMl" value="120" min="10" max="500" step="10" />
+          <button type="button" onclick="stepFormula(10)">+</button>
+        </div>
+        <button class="btn btn-blue" onclick="addFormula()">记录奶粉</button>
+      </div>
+    </div>
+
+    <div class="section-title">💧💩 小便 / 大便 / 更换尿不湿</div>
+    <div class="card">
+      <div class="diaper-grid">
+        <button class="btn btn-blue" style="background:var(--teal);" onclick="addDiaper('pee')">💧 小便 / 更换</button>
+        <button class="btn btn-blue" style="background:var(--brown);" onclick="addDiaper('poop')">💩 大便 / 更换</button>
+      </div>
+    </div>
+
+    <div class="section-title">⏱️ 每日归档与喂奶明细</div>
+    <div class="archive-bar" id="archiveBar"></div>
+    <div class="card" id="logListCard">
+      <div id="logList"></div>
+    </div>
+  </section>
+
+  <!-- 页面 2: 7日曲线 -->
+  <section id="view-charts" class="hidden">
+    <div class="section-title">📈 最近 7 天喂奶量与时长</div>
+    <div class="card">
+      <canvas id="feedChart" height="210"></canvas>
+    </div>
+
+    <div class="section-title">📈 最近 7 天大小便次数</div>
+    <div class="card">
+      <canvas id="diaperChart" height="210"></canvas>
+    </div>
+  </section>
+
+  <!-- 页面 3: 提醒设置 -->
+  <section id="view-reminders" class="hidden">
+    <div class="section-title">⏰ 手机通知提醒设置</div>
+    <div class="card">
+      <div class="form-row">
         <div>
-          <div style="font-size: 15px; font-weight: 600;">开启喂奶提醒与通知</div>
-          <div style="font-size: 12px; color: var(--text-secondary);">到点弹出系统通知、应用内弹窗与提示音</div>
+          <div style="font-weight:600;">通知权限状态</div>
+          <div class="log-sub" id="notifPermText">未请求</div>
         </div>
-        <input type="checkbox" id="reminderEnabledToggle" style="width: 22px; height: 22px; accent-color: var(--accent-blue);" onchange="toggleReminderEnabled()" />
+        <button class="pill-btn" onclick="requestNotifPermission()">开启通知</button>
       </div>
 
-      <div class="mode-switch">
-        <button type="button" class="mode-btn active" id="modeIntervalBtn" onclick="setReminderMode('interval')">按间隔自动顺延</button>
-        <button type="button" class="mode-btn" id="modeExactBtn" onclick="setReminderMode('exact')">手动指定时间点</button>
-      </div>
-
-      <!-- 模式 1：按间隔 -->
-      <div id="intervalPanel">
-        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">快捷选择喂奶间隔：</div>
-        <div class="pill-row" id="intervalPills">
-          <button class="quick-pill" data-mins="120" onclick="selectReminderInterval(120)">2小时</button>
-          <button class="quick-pill" data-mins="150" onclick="selectReminderInterval(150)">2.5小时</button>
-          <button class="quick-pill" data-mins="180" onclick="selectReminderInterval(180)">3小时</button>
-          <button class="quick-pill" data-mins="210" onclick="selectReminderInterval(210)">3.5小时</button>
-          <button class="quick-pill" data-mins="240" onclick="selectReminderInterval(240)">4小时</button>
+      <div class="form-row">
+        <div>
+          <div style="font-weight:600;">按间隔提醒喂奶</div>
+          <div class="log-sub">距上次喂奶达到设定小时后提醒</div>
         </div>
-        <div class="custom-input-row">
-          <input type="number" id="customIntervalInput" class="ios-input" placeholder="自定义分钟数（如 160）" min="5" max="720" />
-          <button class="btn btn-blue" onclick="applyCustomInterval()">设定</button>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="intervalHours" min="1" max="12" step="0.5" value="3" style="width:70px;" onchange="saveSettings()" />
+          <span style="font-size:13px;">小时</span>
         </div>
       </div>
 
-      <!-- 模式 2：手动指定具体时间 -->
-      <div id="exactPanel" style="display:none;">
-        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">选择具体提醒时刻（若已过今天该时刻则自动定为明天同刻）：</div>
-        <div class="custom-input-row" style="margin-top:0;">
-          <input type="time" id="exactTimeInput" class="ios-input" />
-          <button class="btn btn-blue" onclick="applyExactTime()">保存时间</button>
+      <div class="form-row">
+        <div>
+          <div style="font-weight:600;">定时提醒开关</div>
+          <div class="log-sub">每天固定时间推送提醒（页面打开或后台挂起时检测）</div>
         </div>
+        <input type="checkbox" id="fixedReminderEnabled" onchange="saveSettings()" />
       </div>
 
-      <div style="background: var(--bg-primary); border-radius: 12px; padding: 12px; margin-top: 14px; font-size: 13px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-          <span style="color: var(--text-secondary);">当前规则：</span>
-          <span style="font-weight: 600;" id="modalIntervalText">每 3小时</span>
+      <div class="form-row">
+        <div>
+          <div style="font-weight:600;">自定义提醒时间</div>
+          <div class="log-sub">可设置每日固定提醒时刻</div>
         </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span style="color: var(--text-secondary);">下次提醒时间：</span>
-          <span style="font-weight: 700; color: var(--accent-blue);" id="modalNextTimeText">--:--</span>
+        <div style="display:flex;gap:6px;">
+          <input type="time" id="fixedReminderTime" value="09:00" onchange="saveSettings()" />
+          <button class="pill-btn" onclick="sendTestNotification()">测试推送</button>
         </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;">
-        <button class="btn btn-orange" onclick="testNotificationSound()">🔔 测试通知推送</button>
-        <button class="btn btn-green" onclick="exportCalendarReminder()">📅 写入日历提醒</button>
-      </div>
-      <div style="font-size: 11px; color: var(--text-secondary); margin-top: 8px; line-height: 1.4;">
-        提示：iOS 锁屏后系统可能挂起网页后台，若需锁屏强提醒，可点右侧「写入日历提醒」生成系统日程闹钟。
       </div>
     </div>
-  </div>
+  </section>
 
-  <main class="container">
-    <section class="tab-page active" id="page-record">
-      <div class="status-banner">
-        <div class="status-banner-left">
-          <div class="status-label">距离上次喂奶</div>
-          <div class="status-main" id="sinceLastFeed">暂无记录</div>
-          <div class="status-sub" id="nextFeedForecast">点击右侧设置喂奶提醒</div>
-        </div>
-        <button class="reminder-trigger-btn" id="reminderBannerBtn" onclick="openReminderModal()">
-          <span style="font-size: 16px;">⏰</span>
-          <span id="reminderBtnLabel">提醒关</span>
-        </button>
+  <!-- 页面 4: 家庭同步与备份 -->
+  <section id="view-sync" class="hidden">
+    <div class="section-title">👨‍👩‍👧 爸爸妈妈 Supabase 数据同步</div>
+    <div class="card">
+      <div class="form-row">
+        <span style="font-weight:600;">当前记录人</span>
+        <select id="actorSelect" onchange="saveSettings()">
+          <option value="妈妈">👩 妈妈</option>
+          <option value="爸爸">👨 爸爸</option>
+          <option value="家人">👵 家人</option>
+        </select>
       </div>
+      <div class="form-row">
+        <span style="font-weight:600;">家庭同步码</span>
+        <input type="text" id="familyCodeInput" value="tuantuan-family" style="width:160px;" onchange="saveSettings()" />
+      </div>
+      <div class="form-row">
+        <span style="font-weight:600;">Supabase 节点</span>
+        <span style="font-size:12px;color:var(--text-2);">anflgvtfttirymphnkqcg.supabase.co</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
+        <button class="btn btn-blue" onclick="pushToSupabase()">⬆️ 上传同步</button>
+        <button class="btn btn-green" onclick="pullFromSupabase()">⬇️ 拉取最新</button>
+      </div>
+      <div class="log-sub" id="syncStatusText" style="margin-top:8px;">尚未同步</div>
+    </div>
 
-      <div class="card">
-        <div class="card-title">
-          <span>今日概览</span>
-          <span style="font-size: 12px; color: var(--text-secondary);" id="todayDateLabel"></span>
-        </div>
-        <div class="summary-grid">
-          <div class="summary-item">
-            <div class="summary-val" style="color: var(--accent-pink);" id="sumBreast">0分钟</div>
-            <div class="summary-name">亲喂母乳</div>
-          </div>
-          <div class="summary-item">
-            <div class="summary-val" style="color: var(--accent-blue);" id="sumFormula">0ml</div>
-            <div class="summary-name">奶粉 / 瓶喂</div>
-          </div>
-          <div class="summary-item">
-            <div class="summary-val" style="color: var(--accent-orange);" id="sumDiaper">0次</div>
-            <div class="summary-name">嘘嘘 / 便便</div>
-          </div>
-        </div>
+    <div class="section-title">📤💾 本机数据备份与恢复</div>
+    <div class="card">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button class="btn btn-gray" onclick="exportBackup()">📤 导出备份 JSON</button>
+        <button class="btn btn-gray" onclick="document.getElementById('restoreFile').click()">📥 恢复备份文件</button>
       </div>
-
-      <div class="card">
-        <div class="card-title">
-          <span>🤱 母乳亲喂计时</span>
-          <span style="font-size: 12px; color: var(--text-secondary);" id="lastSideHint">建议：左侧</span>
-        </div>
-        <div class="timer-display">
-          <div class="timer-clock" id="timerClock">00:00</div>
-          <div class="timer-side-badge" id="timerStatusBadge">未开始计时</div>
-        </div>
-        <div class="timer-controls">
-          <button class="btn btn-pink" id="btnLeft" onclick="toggleBreastTimer('left')">◀ 左侧开始</button>
-          <button class="btn btn-pink" id="btnRight" onclick="toggleBreastTimer('right')">右侧开始 ▶</button>
-        </div>
-        <button class="btn btn-blue btn-block" id="btnFinishBreast" style="display:none;" onclick="finishBreastTimer()">✅ 结束并保存本次亲喂</button>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><span>🍼 奶粉 / 瓶喂记录</span></div>
-        <div class="pill-row">
-          <button class="quick-pill" onclick="addFormula(60)">60ml</button>
-          <button class="quick-pill" onclick="addFormula(90)">90ml</button>
-          <button class="quick-pill" onclick="addFormula(120)">120ml</button>
-          <button class="quick-pill" onclick="addFormula(150)">150ml</button>
-        </div>
-        <div class="custom-input-row">
-          <input type="number" id="customFormulaInput" class="ios-input" placeholder="自定义奶量 (ml)" min="5" max="500" />
-          <button class="btn btn-blue" onclick="addCustomFormula()">记录</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><span>🧷 换尿布记录</span></div>
-        <div class="diaper-grid">
-          <button class="btn btn-blue" style="background: rgba(0,122,255,0.14); color: var(--accent-blue);" onclick="addDiaper('pee')">💧 嘘嘘</button>
-          <button class="btn btn-orange" onclick="addDiaper('poop')">💩 便便</button>
-          <button class="btn btn-green" onclick="addDiaper('both')">💧💩 都有</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">
-          <span>今日时间轴</span>
-          <span style="font-size: 12px; color: var(--text-secondary);" id="todayCountBadge">0条</span>
-        </div>
-        <div class="record-list" id="todayList"></div>
-      </div>
-    </section>
-
-    <section class="tab-page" id="page-history">
-      <div class="card">
-        <div class="card-title">
-          <span>📈 近7日奶粉量趋势 (ml)</span>
-          <span style="font-size: 12px; color: var(--text-secondary);">每日自动归档</span>
-        </div>
-        <div class="chart-box" id="trendChart"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><span>📅 每日历史汇总</span></div>
-        <div class="record-list" id="dailyArchiveList"></div>
-      </div>
-    </section>
-
-    <section class="tab-page" id="page-settings">
-      <div class="card">
-        <div class="card-title"><span>☁️ 家庭云实时同步 (爸爸 & 妈妈)</span></div>
-        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">
-          爸爸和妈妈在各自手机上输入相同的「家庭口令」，即可实时共享团团的喂养记录。
-        </div>
-        <div class="custom-input-row" style="margin-top: 0; margin-bottom: 10px;">
-          <input type="text" id="familyCodeInput" class="ios-input" placeholder="输入家庭口令 (如 888888)" />
-          <button class="btn btn-blue" onclick="saveFamilyCode()">应用</button>
-        </div>
-        <button class="btn btn-gray btn-block" onclick="manualSync()">🔄 立即双向同步</button>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><span>💾 本地数据备份与恢复</span></div>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <button class="btn btn-gray btn-block" onclick="exportBackup()">📤 导出完整 JSON 备份文件</button>
-          <button class="btn btn-gray btn-block" onclick="copyBackupText()">📋 一键复制全部数据文本</button>
-          <textarea id="restoreTextarea" class="ios-input" rows="3" placeholder="在此粘贴之前备份的 JSON 文本以恢复合并..."></textarea>
-          <button class="btn btn-blue btn-block" onclick="importBackup()">📥 粘贴 JSON 恢复并智能合并</button>
-        </div>
-      </div>
-    </section>
-  </main>
+      <input type="file" id="restoreFile" accept=".json,application/json" class="hidden" onchange="importBackup(event)" />
+    </div>
+  </section>
 
   <nav class="tab-bar">
-    <button class="tab-item active" onclick="switchTab('record', this)">
-      <span class="tab-icon">🍼</span>
-      <span>今日打卡</span>
+    <button class="tab-btn active" id="tab-today" onclick="switchTab('today')">
+      <span class="tab-icon">🍼</span><span>今日记录</span>
     </button>
-    <button class="tab-item" onclick="switchTab('history', this)">
-      <span class="tab-icon">📊</span>
-      <span>趋势归档</span>
+    <button class="tab-btn" id="tab-charts" onclick="switchTab('charts')">
+      <span class="tab-icon">📈</span><span>7日曲线</span>
     </button>
-    <button class="tab-item" onclick="switchTab('settings', this)">
-      <span class="tab-icon">⚙️</span>
-      <span>设置备份</span>
+    <button class="tab-btn" id="tab-reminders" onclick="switchTab('reminders')">
+      <span class="tab-icon">⏰</span><span>提醒设置</span>
+    </button>
+    <button class="tab-btn" id="tab-sync" onclick="switchTab('sync')">
+      <span class="tab-icon">👨‍👩‍👧</span><span>家庭/备份</span>
     </button>
   </nav>
 
   <script>
-    const SUPABASE_URL = 'https://anflgvttiirymphnkqcg.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuZmxndnR0aWlyeW1waG5rcWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI4ODc1MjMsImV4cCI6MjA1ODQ2MzUyM30.P9G5yX2uA07g8d0p-a1wB2_qJ5w_9mN8vX3zL4kR7tY';
+    // 注意：前端仅使用 anon 公钥；service_role 密钥绝不写入客户端代码
+    const SUPABASE_URL = "https://anflgvtfttirymphnkqcg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuZmxndnR0aWlyeW1waG5rcWNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ5MDg3NDYsImV4cCI6MjExMDQ4NDc0Nn0.8_GMkXmXMIxeGvRqfTgLNrBl2bqntD0T20FMj0DjCiA";
 
-    const STORAGE_KEY = 'tuantuan_feeding_records_v2';
-    const FAMILY_CODE_KEY = 'tuantuan_family_code';
-    const REMINDER_KEY = 'tuantuan_reminder_cfg_v2';
+    const STORAGE_KEY = "tuantuan_feeding_logs_v1";
+    const SETTINGS_KEY = "tuantuan_feeding_settings_v1";
 
-    let records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    let familyCode = localStorage.getItem(FAMILY_CODE_KEY) || '888888';
-    let reminderCfg = JSON.parse(localStorage.getItem(REMINDER_KEY) || JSON.stringify({
-      enabled: false,
-      mode: 'interval', // 'interval' | 'exact'
-      intervalMins: 180,
-      exactTimestamp: null,
-      lastNotifiedKey: null,
-      snoozeUntil: null
-    }));
+    let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    let settings = Object.assign({
+      theme: "auto",
+      formulaMl: 120,
+      actor: "妈妈",
+      familyCode: "tuantuan-family",
+      intervalHours: 3,
+      fixedReminderEnabled: false,
+      fixedReminderTime: "09:00",
+      lastFixedNotified: ""
+    }, JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"));
 
-    let timerState = { activeSide: null, leftSec: 0, rightSec: 0, lastTick: null };
+    let selectedDay = getTodayKey();
+    let activeSide = null; // 'left' | 'right' | null
+    let timerSeconds = 0;
     let timerInterval = null;
-    let audioCtx = null;
+    let feedChartInstance = null;
+    let diaperChartInstance = null;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('familyCodeInput').value = familyCode;
-      renderAll();
-      syncWithCloud();
-      setInterval(updateStatusBannerAndReminder, 1000);
-      setInterval(() => syncWithCloud(true), 15000);
-    });
+    function getTodayKey(offsetDays = 0) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function formatTimeHM(isoOrDate) {
+      const d = typeof isoOrDate === "string" ? new Date(isoOrDate) : isoOrDate;
+      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    }
+
+    function formatDuration(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
 
     function showToast(msg) {
-      const el = document.getElementById('toast');
+      const el = document.getElementById("toast");
       el.textContent = msg;
-      el.classList.add('show');
-      clearTimeout(el._timer);
-      el._timer = setTimeout(() => el.classList.remove('show'), 2400);
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 2000);
     }
 
-    function switchTab(tabName, btnEl) {
-      document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
-      document.getElementById('page-' + tabName).classList.add('active');
-      btnEl.classList.add('active');
-      if (tabName === 'history') renderHistory();
+    function saveLogs() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
     }
 
-    // ================= 提醒推送逻辑 =================
-    function saveReminderCfg() {
-      localStorage.setItem(REMINDER_KEY, JSON.stringify(reminderCfg));
-      updateStatusBannerAndReminder();
-      if (document.getElementById('reminderModal').classList.contains('show')) {
-        updateModalPreview();
-      }
+    function saveSettings() {
+      settings.formulaMl = Number(document.getElementById("formulaMl").value) || 120;
+      settings.actor = document.getElementById("actorSelect").value;
+      settings.familyCode = (document.getElementById("familyCodeInput").value || "tuantuan-family").trim();
+      settings.intervalHours = Number(document.getElementById("intervalHours").value) || 3;
+      settings.fixedReminderEnabled = document.getElementById("fixedReminderEnabled").checked;
+      settings.fixedReminderTime = document.getElementById("fixedReminderTime").value || "09:00";
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     }
 
-    function openReminderModal() {
-      document.getElementById('reminderEnabledToggle').checked = reminderCfg.enabled;
-      applyModeUI(reminderCfg.mode || 'interval');
-      const targetMs = getTargetReminderTime() || (Date.now() + (reminderCfg.intervalMins || 180) * 60000);
-      const td = new Date(targetMs);
-      document.getElementById('exactTimeInput').value =
-        `${String(td.getHours()).padStart(2, '0')}:${String(td.getMinutes()).padStart(2, '0')}`;
-      updateModalPreview();
-      document.getElementById('reminderModal').classList.add('show');
-    }
-
-    function closeReminderModal(e) {
-      if (!e || e.target.id === 'reminderModal') {
-        document.getElementById('reminderModal').classList.remove('show');
-      }
-    }
-
-    function applyModeUI(mode) {
-      document.getElementById('modeIntervalBtn').classList.toggle('active', mode === 'interval');
-      document.getElementById('modeExactBtn').classList.toggle('active', mode === 'exact');
-      document.getElementById('intervalPanel').style.display = mode === 'interval' ? 'block' : 'none';
-      document.getElementById('exactPanel').style.display = mode === 'exact' ? 'block' : 'none';
-    }
-
-    function setReminderMode(mode) {
-      reminderCfg.mode = mode;
-      reminderCfg.snoozeUntil = null;
-      reminderCfg.lastNotifiedKey = null;
-      if (mode === 'exact' && !reminderCfg.exactTimestamp) {
-        reminderCfg.exactTimestamp = Date.now() + reminderCfg.intervalMins * 60000;
-      }
-      applyModeUI(mode);
-      saveReminderCfg();
-    }
-
-    async function toggleReminderEnabled() {
-      const checked = document.getElementById('reminderEnabledToggle').checked;
-      reminderCfg.enabled = checked;
-      reminderCfg.snoozeUntil = null;
-      if (checked) {
-        unlockAudioContext();
-        if ('Notification' in window && Notification.permission === 'default') {
-          try { await Notification.requestPermission(); } catch (e) {}
-        }
-        showToast('已开启喂奶提醒与通知');
+    function applyTheme() {
+      if (settings.theme === "dark" || settings.theme === "light") {
+        document.documentElement.setAttribute("data-theme", settings.theme);
       } else {
-        showToast('已关闭喂奶提醒');
+        document.documentElement.removeAttribute("data-theme");
       }
-      saveReminderCfg();
     }
 
-    function selectReminderInterval(mins) {
-      reminderCfg.mode = 'interval';
-      reminderCfg.intervalMins = mins;
-      reminderCfg.enabled = true;
-      reminderCfg.snoozeUntil = null;
-      reminderCfg.lastNotifiedKey = null;
-      document.getElementById('reminderEnabledToggle').checked = true;
-      applyModeUI('interval');
-      unlockAudioContext();
-      saveReminderCfg();
-      showToast('已设为每 ' + formatMinsText(mins) + ' 提醒');
+    function toggleTheme() {
+      const order = ["auto", "light", "dark"];
+      const idx = order.indexOf(settings.theme);
+      settings.theme = order[(idx + 1) % order.length];
+      saveSettings();
+      applyTheme();
+      showToast(`主题模式：${settings.theme === "auto" ? "跟随系统" : settings.theme === "dark" ? "深色" : "浅色"}`);
     }
 
-    function applyCustomInterval() {
-      const val = parseInt(document.getElementById('customIntervalInput').value, 10);
-      if (!val || val < 5 || val > 720) {
-        showToast('请输入 5 ~ 720 分钟');
-        return;
-      }
-      selectReminderInterval(val);
-      document.getElementById('customIntervalInput').value = '';
-    }
-
-    function applyExactTime() {
-      const timeVal = document.getElementById('exactTimeInput').value;
-      if (!timeVal) {
-        showToast('请先选择时间点');
-        return;
-      }
-      const [hh, mm] = timeVal.split(':').map(Number);
-      const now = new Date();
-      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0, 0);
-      if (target.getTime() <= Date.now()) {
-        target.setDate(target.getDate() + 1);
-      }
-      reminderCfg.mode = 'exact';
-      reminderCfg.exactTimestamp = target.getTime();
-      reminderCfg.enabled = true;
-      reminderCfg.snoozeUntil = null;
-      reminderCfg.lastNotifiedKey = null;
-      document.getElementById('reminderEnabledToggle').checked = true;
-      unlockAudioContext();
-      saveReminderCfg();
-      showToast(`已设定提醒时间 ${timeVal}`);
-    }
-
-    function formatMinsText(mins) {
-      if (mins % 60 === 0) return (mins / 60) + '小时';
-      const h = Math.floor(mins / 60);
-      const m = mins % 60;
-      return h > 0 ? `${h}小时${m}分` : `${m}分钟`;
-    }
-
-    function getLastFeedRecord() {
-      const feeds = records.filter(r => r.type === 'breast' || r.type === 'formula');
-      if (!feeds.length) return null;
-      feeds.sort((a, b) => b.timestamp - a.timestamp);
-      return feeds[0];
-    }
-
-    function getTargetReminderTime() {
-      if (!reminderCfg.enabled) return null;
-      if (reminderCfg.snoozeUntil) return reminderCfg.snoozeUntil;
-      if (reminderCfg.mode === 'exact') {
-        return reminderCfg.exactTimestamp || null;
-      }
-      const lastFeed = getLastFeedRecord();
-      if (!lastFeed) return null;
-      return lastFeed.timestamp + (reminderCfg.intervalMins || 180) * 60 * 1000;
-    }
-
-    function updateModalPreview() {
-      document.querySelectorAll('#intervalPills .quick-pill').forEach(btn => {
-        btn.classList.toggle('selected', reminderCfg.mode === 'interval' && Number(btn.dataset.mins) === reminderCfg.intervalMins);
+    function switchTab(tabName) {
+      ["today", "charts", "reminders", "sync"].forEach(t => {
+        document.getElementById(`view-${t}`).classList.toggle("hidden", t !== tabName);
+        document.getElementById(`tab-${t}`).classList.toggle("active", t === tabName);
       });
-      document.getElementById('modalIntervalText').textContent = reminderCfg.mode === 'exact'
-        ? '指定时间点模式'
-        : `每次喂奶后 ${formatMinsText(reminderCfg.intervalMins)}`;
-
-      const targetMs = getTargetReminderTime();
-      if (!targetMs) {
-        document.getElementById('modalNextTimeText').textContent = reminderCfg.enabled ? '打卡后自动计算' : '未开启';
-      } else {
-        const d = new Date(targetMs);
-        const dayPrefix = getDateStr(targetMs) !== getDateStr(Date.now()) ? '明天 ' : '';
-        document.getElementById('modalNextTimeText').textContent =
-          `${dayPrefix}${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-      }
+      if (tabName === "charts") renderCharts();
     }
 
-    function updateStatusBannerAndReminder() {
-      const lastFeed = getLastFeedRecord();
-      const sinceEl = document.getElementById('sinceLastFeed');
-      const subEl = document.getElementById('nextFeedForecast');
-      const btnEl = document.getElementById('reminderBannerBtn');
-      const btnLabel = document.getElementById('reminderBtnLabel');
-
-      if (!lastFeed) {
-        sinceEl.textContent = '暂无喂奶记录';
-      } else {
-        const diffSec = Math.max(0, Math.floor((Date.now() - lastFeed.timestamp) / 1000));
-        const h = Math.floor(diffSec / 3600);
-        const m = Math.floor((diffSec % 3600) / 60);
-        sinceEl.textContent = h > 0 ? `${h}小时 ${m}分钟前` : `${m}分钟前`;
-      }
-
-      if (!reminderCfg.enabled) {
-        btnLabel.textContent = '提醒关';
-        btnEl.classList.remove('due');
-        if (lastFeed) {
-          const feedDesc = lastFeed.type === 'formula' ? `奶粉 ${lastFeed.amount}ml` : `母乳 ${lastFeed.durationMin}分钟`;
-          subEl.textContent = `上次：${formatTime(lastFeed.timestamp)} (${feedDesc})`;
-        } else {
-          subEl.textContent = '点击右侧设置喂奶提醒';
-        }
-        return;
-      }
-
-      const targetMs = getTargetReminderTime();
-      if (!targetMs) {
-        btnLabel.textContent = formatMinsText(reminderCfg.intervalMins);
-        btnEl.classList.remove('due');
-        subEl.textContent = `已设每${formatMinsText(reminderCfg.intervalMins)}提醒，打卡后开始倒计时`;
-        return;
-      }
-
-      const td = new Date(targetMs);
-      const timeStr = `${String(td.getHours()).padStart(2, '0')}:${String(td.getMinutes()).padStart(2, '0')}`;
-      btnLabel.textContent = reminderCfg.mode === 'exact' ? timeStr : formatMinsText(reminderCfg.intervalMins);
-
-      const remainSec = Math.floor((targetMs - Date.now()) / 1000);
-      if (remainSec > 0) {
-        btnEl.classList.remove('due');
-        const rh = Math.floor(remainSec / 3600);
-        const rm = Math.floor((remainSec % 3600) / 60);
-        const rs = remainSec % 60;
-        const remainText = rh > 0 ? `${rh}时${rm}分后` : `${rm}分${String(rs).padStart(2, '0')}秒后`;
-        subEl.textContent = `⏰ 提醒 ${timeStr}（剩余 ${remainText}）`;
-      } else {
-        btnEl.classList.add('due');
-        const overMin = Math.floor(Math.abs(remainSec) / 60);
-        subEl.textContent = `🔔 已到喂奶时间 (${timeStr}，已超 ${overMin} 分钟)`;
-        const triggerKey = `${reminderCfg.mode}_${targetMs}`;
-        if (reminderCfg.lastNotifiedKey !== triggerKey) {
-          reminderCfg.lastNotifiedKey = triggerKey;
-          saveReminderCfg();
-          fireFeedingAlarm();
-        }
-      }
-    }
-
-    function unlockAudioContext() {
-      if (!audioCtx) {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (AC) audioCtx = new AC();
-      }
-      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-    }
-
-    function playGentleChime() {
-      try {
-        unlockAudioContext();
-        if (!audioCtx) return;
-        const notes = [523.25, 659.25, 783.99, 1046.5];
-        notes.forEach((freq, idx) => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.22);
-          gain.gain.setValueAtTime(0.001, audioCtx.currentTime + idx * 0.22);
-          gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + idx * 0.22 + 0.05);
-          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + idx * 0.22 + 0.6);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(audioCtx.currentTime + idx * 0.22);
-          osc.stop(audioCtx.currentTime + idx * 0.22 + 0.65);
+    function toggleBreast(side) {
+      if (activeSide === side) {
+        // 停止并保存
+        clearInterval(timerInterval);
+        const savedSec = Math.max(timerSeconds, 1);
+        const now = new Date();
+        addLogEntry({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          family_code: settings.familyCode,
+          type: side === "left" ? "breast_left" : "breast_right",
+          amount_ml: 0,
+          duration_sec: savedSec,
+          note: `${side === "left" ? "左侧" : "右侧"}母乳 ${Math.ceil(savedSec / 60)} 分钟`,
+          actor: settings.actor,
+          created_at: now.toISOString(),
+          day_key: getTodayKey()
         });
-      } catch (e) {}
+        activeSide = null;
+        timerSeconds = 0;
+        updateTimerButtons();
+        showToast(`已保存${side === "left" ? "左侧" : "右侧"}母乳记录`);
+        return;
+      }
+
+      if (activeSide && activeSide !== side) {
+        showToast("请先结束当前正在计时的另一侧");
+        return;
+      }
+
+      activeSide = side;
+      timerSeconds = 0;
+      updateTimerButtons();
+      timerInterval = setInterval(() => {
+        timerSeconds += 1;
+        document.getElementById(`timer-${side}`).textContent = formatDuration(timerSeconds);
+      }, 1000);
     }
 
-    function sendSystemPush(title, body) {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        try {
-          new Notification(title, { body, tag: 'tuantuan-feeding-push' });
-        } catch (e) {}
+    function updateTimerButtons() {
+      const leftBtn = document.getElementById("btn-left");
+      const rightBtn = document.getElementById("btn-right");
+      document.getElementById("timer-left").textContent = activeSide === "left" ? formatDuration(timerSeconds) : "00:00";
+      document.getElementById("timer-right").textContent = activeSide === "right" ? formatDuration(timerSeconds) : "00:00";
+
+      leftBtn.textContent = activeSide === "left" ? "结束并保存" : "开始左侧";
+      rightBtn.textContent = activeSide === "right" ? "结束并保存" : "开始右侧";
+    }
+
+    function stepFormula(delta) {
+      const input = document.getElementById("formulaMl");
+      const next = Math.min(500, Math.max(10, (Number(input.value) || 120) + delta));
+      input.value = next;
+      saveSettings();
+    }
+
+    function addFormula() {
+      const ml = Math.max(10, Number(document.getElementById("formulaMl").value) || 120);
+      saveSettings();
+      const now = new Date();
+      addLogEntry({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        family_code: settings.familyCode,
+        type: "formula",
+        amount_ml: ml,
+        duration_sec: 0,
+        note: `奶粉 ${ml} ml`,
+        actor: settings.actor,
+        created_at: now.toISOString(),
+        day_key: getTodayKey()
+      });
+      showToast(`已记录奶粉 ${ml} ml`);
+    }
+
+    function addDiaper(kind) {
+      const now = new Date();
+      addLogEntry({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        family_code: settings.familyCode,
+        type: kind,
+        amount_ml: 0,
+        duration_sec: 0,
+        note: kind === "pee" ? "小便 / 更换尿不湿" : "大便 / 更换尿不湿",
+        actor: settings.actor,
+        created_at: now.toISOString(),
+        day_key: getTodayKey()
+      });
+      showToast(kind === "pee" ? "已记录小便" : "已记录大便");
+    }
+
+    function addLogEntry(entry) {
+      logs.unshift(entry);
+      saveLogs();
+      selectedDay = getTodayKey();
+      renderAll();
+      pushToSupabase(true);
+    }
+
+    function deleteLog(id) {
+      logs = logs.filter(item => item.id !== id);
+      saveLogs();
+      renderAll();
+      showToast("已删除记录");
+    }
+
+    function renderArchiveBar() {
+      const bar = document.getElementById("archiveBar");
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const key = getTodayKey(-i);
+        days.push({
+          key,
+          label: i === 0 ? `今天 (${key.slice(5)})` : i === 1 ? `昨天 (${key.slice(5)})` : key.slice(5)
+        });
+      }
+      bar.innerHTML = days.map(d => `
+        <button class="day-chip ${d.key === selectedDay ? "active" : ""}" onclick="selectDay('${d.key}')">${d.label}</button>
+      `).join("");
+    }
+
+    function selectDay(dayKey) {
+      selectedDay = dayKey;
+      renderAll();
+    }
+
+    function renderAll() {
+      renderArchiveBar();
+      const todayKey = getTodayKey();
+      const todayLogs = logs.filter(l => l.day_key === todayKey);
+
+      let leftSec = 0, rightSec = 0, formulaSum = 0, formulaCount = 0, peeCount = 0, poopCount = 0;
+      todayLogs.forEach(l => {
+        if (l.type === "breast_left") leftSec += Number(l.duration_sec || 0);
+        if (l.type === "breast_right") rightSec += Number(l.duration_sec || 0);
+        if (l.type === "formula") {
+          formulaSum += Number(l.amount_ml || 0);
+          formulaCount += 1;
+        }
+        if (l.type === "pee") peeCount += 1;
+        if (l.type === "poop") poopCount += 1;
+      });
+
+      const totalBreastMin = Math.round((leftSec + rightSec) / 60);
+      document.getElementById("kpiBreast").textContent = `${totalBreastMin}分`;
+      document.getElementById("kpiBreastDetail").textContent = `左 ${Math.round(leftSec / 60)}m · 右 ${Math.round(rightSec / 60)}m`;
+      document.getElementById("kpiFormula").textContent = `${formulaSum} ml`;
+      document.getElementById("kpiFormulaCount").textContent = `共 ${formulaCount} 次`;
+      document.getElementById("kpiDiaper").textContent = `${peeCount + poopCount} 次`;
+      document.getElementById("kpiDiaperDetail").textContent = `💧 ${peeCount} · 💩 ${poopCount}`;
+
+      const feeds = logs
+        .filter(l => ["breast_left", "breast_right", "formula"].includes(l.type))
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      if (feeds.length > 0) {
+        const diffMin = Math.max(0, Math.floor((Date.now() - new Date(feeds[0].created_at).getTime()) / 60000));
+        const h = Math.floor(diffMin / 60);
+        const m = diffMin % 60;
+        document.getElementById("kpiSinceFeed").textContent = h > 0 ? `${h}时${m}分` : `${m}分`;
+        document.getElementById("kpiLastFeedTime").textContent = `上次喂奶：${formatTimeHM(feeds[0].created_at)}（${feeds[0].actor || "家人"}）`;
+      } else {
+        document.getElementById("kpiSinceFeed").textContent = "--";
+        document.getElementById("kpiLastFeedTime").textContent = "暂无喂奶记录";
+      }
+
+      const dayLogs = logs
+        .filter(l => l.day_key === selectedDay)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      const listEl = document.getElementById("logList");
+      if (dayLogs.length === 0) {
+        listEl.innerHTML = `<div class="log-sub" style="padding:12px 0;text-align:center;">${selectedDay} 暂无记录</div>`;
+      } else {
+        listEl.innerHTML = dayLogs.map(item => {
+          const icon = item.type === "breast_left" ? "🍼左侧"
+            : item.type === "breast_right" ? "🍼右侧"
+            : item.type === "formula" ? "🍼奶粉"
+            : item.type === "pee" ? "💧小便" : "💩大便";
+          const detail = item.type.startsWith("breast")
+            ? `${Math.floor(item.duration_sec / 60)}分${item.duration_sec % 60}秒`
+            : item.type === "formula" ? `${item.amount_ml} ml` : "已更换";
+          return `
+            <div class="log-item">
+              <div>
+                <div class="log-main">${icon} · ${detail}</div>
+                <div class="log-sub">记录人：${item.actor || "家人"}</div>
+              </div>
+              <div class="log-right">
+                <span class="log-time">${formatTimeHM(item.created_at)}</span>
+                <button class="del-btn" onclick="deleteLog('${item.id}')">删除</button>
+              </div>
+            </div>
+          `;
+        }).join("");
       }
     }
 
-    function fireFeedingAlarm() {
-      playGentleChime();
-      if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
-      const msg = reminderCfg.mode === 'exact'
-        ? '已到达你设定的喂奶时间点，快给团团准备吧~'
-        : `距离上次喂奶已满 ${formatMinsText(reminderCfg.intervalMins)}，请准备给团团喂奶哦~`;
-      document.getElementById('alarmDesc').textContent = msg;
-      document.getElementById('alarmOverlay').classList.add('show');
-      sendSystemPush('🍼 团团该喝奶啦！', msg);
+    function renderCharts() {
+      const labels = [];
+      const formulaSeries = [];
+      const breastMinSeries = [];
+      const peeSeries = [];
+      const poopSeries = [];
+
+      for (let i = 6; i >= 0; i--) {
+        const key = getTodayKey(-i);
+        labels.push(key.slice(5));
+        const dayItems = logs.filter(l => l.day_key === key);
+        formulaSeries.push(dayItems.filter(x => x.type === "formula").reduce((s, x) => s + Number(x.amount_ml || 0), 0));
+        breastMinSeries.push(Math.round(dayItems.filter(x => x.type.startsWith("breast")).reduce((s, x) => s + Number(x.duration_sec || 0), 0) / 60));
+        peeSeries.push(dayItems.filter(x => x.type === "pee").length);
+        poopSeries.push(dayItems.filter(x => x.type === "poop").length);
+      }
+
+      if (feedChartInstance) feedChartInstance.destroy();
+      if (diaperChartInstance) diaperChartInstance.destroy();
+
+      feedChartInstance = new Chart(document.getElementById("feedChart"), {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            { label: "奶粉 (ml)", data: formulaSeries, borderColor: "#007AFF", backgroundColor: "#007AFF", tension: 0.3 },
+            { label: "母乳 (分钟)", data: breastMinSeries, borderColor: "#FF2D55", backgroundColor: "#FF2D55", tension: 0.3 }
+          ]
+        },
+        options: { responsive: true, plugins: { legend: { position: "bottom" } } }
+      });
+
+      diaperChartInstance = new Chart(document.getElementById("diaperChart"), {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            { label: "💧 小便次数", data: peeSeries, backgroundColor: "#32ADE6" },
+            { label: "💩 大便次数", data: poopSeries, backgroundColor: "#A2845E" }
+          ]
+        },
+        options: { responsive: true, plugins: { legend: { position: "bottom" } } }
+      });
     }
 
-    function dismissAlarm() {
-      document.getElementById('alarmOverlay').classList.remove('show');
+    function refreshNotifStatus() {
+      const el = document.getElementById("notifPermText");
+      if (!("Notification" in window)) {
+        el.textContent = "当前浏览器不支持系统通知";
+        return;
+      }
+      el.textContent = Notification.permission === "granted" ? "已允许通知"
+        : Notification.permission === "denied" ? "已被拒绝（请在 iPhone 设置中开启）" : "尚未授权";
     }
 
-    function snoozeReminder(mins) {
-      document.getElementById('alarmOverlay').classList.remove('show');
-      reminderCfg.snoozeUntil = Date.now() + mins * 60 * 1000;
-      reminderCfg.lastNotifiedKey = null;
-      saveReminderCfg();
-      showToast(`已推迟 ${mins} 分钟提醒`);
+    async function requestNotifPermission() {
+      if (!("Notification" in window)) {
+        showToast("当前环境不支持浏览器通知");
+        return;
+      }
+      const perm = await Notification.requestPermission();
+      refreshNotifStatus();
+      showToast(perm === "granted" ? "通知权限已开启" : "未开启通知权限");
     }
 
-    function testNotificationSound() {
-      unlockAudioContext();
-      playGentleChime();
-      if ('Notification' in window) {
-        Notification.requestPermission().then(perm => {
-          if (perm === 'granted') {
-            sendSystemPush('🍼 团团喂奶提醒测试', '通知横幅已启用，到点会为你推送提醒~');
-            showToast('已发送测试通知与铃声');
-          } else {
-            showToast('已播放铃声（请在设置里允许通知横幅）');
+    function sendTestNotification() {
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("团团喂养提醒", { body: "这是一条测试通知，提醒已正常工作！" });
+      } else {
+        showToast("团团喂养提醒：请先点击上方「开启通知」");
+      }
+    }
+
+    function checkReminders() {
+      if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+      const feeds = logs
+        .filter(l => ["breast_left", "breast_right", "formula"].includes(l.type))
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      if (feeds.length > 0 && settings.intervalHours > 0) {
+        const hoursSince = (Date.now() - new Date(feeds[0].created_at).getTime()) / 3600000;
+        const lastIntervalKey = `${feeds[0].id}-interval`;
+        if (hoursSince >= settings.intervalHours && !sessionStorage.getItem(lastIntervalKey)) {
+          sessionStorage.setItem(lastIntervalKey, "1");
+          new Notification("团团喂奶间隔提醒", {
+            body: `距离上次喂奶已过去 ${settings.intervalHours} 小时左右，该准备喂奶啦。`
+          });
+        }
+      }
+
+      if (settings.fixedReminderEnabled) {
+        const now = new Date();
+        const hm = formatTimeHM(now);
+        const todayStamp = `${getTodayKey()}-${settings.fixedReminderTime}`;
+        if (hm === settings.fixedReminderTime && settings.lastFixedNotified !== todayStamp) {
+          settings.lastFixedNotified = todayStamp;
+          saveSettings();
+          new Notification("团团定时喂养提醒", {
+            body: `已到设定的提醒时间 ${settings.fixedReminderTime}。`
+          });
+        }
+      }
+    }
+
+    async function pushToSupabase(silent = false) {
+      if (logs.length === 0) return;
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/tuantuan_logs`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Prefer": "resolution=merge-duplicates"
+          },
+          body: JSON.stringify(logs)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const msg = `已同步 ${logs.length} 条记录到云端（${formatTimeHM(new Date())}）`;
+        document.getElementById("syncStatusText").textContent = msg;
+        if (!silent) showToast("上传同步成功");
+      } catch (err) {
+        document.getElementById("syncStatusText").textContent = `同步失败（请确认已执行建表 SQL）：${err.message}`;
+        if (!silent) showToast("同步失败，请检查建表");
+      }
+    }
+
+    async function pullFromSupabase() {
+      try {
+        const code = encodeURIComponent(settings.familyCode || "tuantuan-family");
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/tuantuan_logs?family_code=eq.${code}&order=created_at.desc`, {
+          headers: {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
           }
         });
-      } else {
-        showToast('已播放提示铃声');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const remoteRows = await res.json();
+        const map = new Map();
+        logs.forEach(item => map.set(item.id, item));
+        remoteRows.forEach(item => map.set(item.id, item));
+        logs = Array.from(map.values()).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        saveLogs();
+        renderAll();
+        const msg = `已拉取并合并云端数据（共 ${logs.length} 条 · ${formatTimeHM(new Date())}）`;
+        document.getElementById("syncStatusText").textContent = msg;
+        showToast("已拉取最新家庭数据");
+      } catch (err) {
+        document.getElementById("syncStatusText").textContent = `拉取失败：${err.message}`;
+        showToast("拉取失败");
       }
     }
 
-    function exportCalendarReminder() {
-      const targetMs = getTargetReminderTime() || (Date.now() + (reminderCfg.intervalMins || 180) * 60000);
-      const start = new Date(targetMs);
-      const end = new Date(targetMs + 15 * 60 * 1000);
-      const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-      const ics = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//Tuantuan Feeding//CN',
-        'BEGIN:VEVENT',
-        `UID:tuantuan-${Date.now()}@feeding.app`,
-        `DTSTAMP:${fmt(new Date())}`,
-        `DTSTART:${fmt(start)}`,
-        `DTEND:${fmt(end)}`,
-        'SUMMARY:🍼 团团喂奶提醒',
-        'DESCRIPTION:该给团团喂奶啦',
-        'BEGIN:VALARM',
-        'TRIGGER:-PT0M',
-        'ACTION:DISPLAY',
-        'DESCRIPTION:团团该喝奶啦',
-        'END:VALARM',
-        'END:VEVENT',
-        'END:VCALENDAR'
-      ].join('\r\n');
-      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    function exportBackup() {
+      const payload = {
+        exported_at: new Date().toISOString(),
+        settings,
+        logs
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'tuantuan_feeding_reminder.ics';
+      a.download = `tuantuan-backup-${getTodayKey()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('正在调起日历添加提醒...');
+      showToast("已导出备份 JSON");
     }
 
-    // ================= 打卡与记录 =================
-    function saveRecordsAndSync(newRec) {
-      records.push(newRec);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-      if ((newRec.type === 'breast' || newRec.type === 'formula') && reminderCfg.mode === 'interval') {
-        reminderCfg.snoozeUntil = null;
-        reminderCfg.lastNotifiedKey = null;
-        saveReminderCfg();
+    function importBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (Array.isArray(data.logs)) {
+            logs = data.logs;
+            saveLogs();
+          }
+          if (data.settings) {
+            settings = Object.assign(settings, data.settings);
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+          }
+          initControls();
+          renderAll();
+          showToast("备份恢复成功");
+        } catch {
+          showToast("备份文件格式无效");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function initControls() {
+      applyTheme();
+      document.getElementById("formulaMl").value = settings.formulaMl;
+      document.getElementById("actorSelect").value = settings.actor;
+      document.getElementById("familyCodeInput").value = settings.familyCode;
+      document.getElementById("intervalHours").value = settings.intervalHours;
+      document.getElementById("fixedReminderEnabled").checked = settings.fixedReminderEnabled;
+      document.getElementById("fixedReminderTime").value = settings.fixedReminderTime;
+      refreshNotifStatus();
+    }
+
+    initControls();
+    renderAll();
+    setInterval(checkReminders, 30000);
+    setInterval(() => {
+      if (selectedDay !== getTodayKey()) {
+        selectedDay = getTodayKey();
       }
       renderAll();
-      pushRecordToCloud(newRec);
-    }
-
-    function toggleBreastTimer(side) {
-      unlockAudioContext();
-      if (timerState.activeSide === side) {
-        clearInterval(timerInterval);
-        timerState.activeSide = null;
-        updateTimerUI();
-        return;
-      }
-      timerState.activeSide = side;
-      timerState.lastTick = Date.now();
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        const now = Date.now();
-        const delta = Math.floor((now - timerState.lastTick) / 1000);
-        if (delta >= 1) {
-          if (timerState.activeSide === 'left') timerState.leftSec += delta;
-          if (timerState.activeSide === 'right') timerState.rightSec += delta;
-          timerState.lastTick = now;
-          updateTimerUI();
-        }
-      }, 250);
-      updateTimerUI();
-    }
-
-    function updateTimerUI() {
-      const totalSec = timerState.leftSec + timerState.rightSec;
-      const mins = String(Math.floor(totalSec / 60)).padStart(2, '0');
-      const secs = String(totalSec % 60).padStart(2, '0');
-      document.getElementById('timerClock').textContent = `${mins}:${secs}`;
-
-      const btnLeft = document.getElementById('btnLeft');
-      const btnRight = document.getElementById('btnRight');
-      const badge = document.getElementById('timerStatusBadge');
-      const finishBtn = document.getElementById('btnFinishBreast');
-
-      btnLeft.classList.toggle('active', timerState.activeSide === 'left');
-      btnRight.classList.toggle('active', timerState.activeSide === 'right');
-
-      btnLeft.textContent = timerState.activeSide === 'left'
-        ? `⏸ 左侧暂停 (${Math.floor(timerState.leftSec/60)}分)`
-        : `◀ 左侧${timerState.leftSec > 0 ? '继续' : '开始'}`;
-      btnRight.textContent = timerState.activeSide === 'right'
-        ? `⏸ 右侧暂停 (${Math.floor(timerState.rightSec/60)}分)`
-        : `右侧${timerState.rightSec > 0 ? '继续' : '开始'} ▶`;
-
-      if (timerState.activeSide) {
-        badge.textContent = timerState.activeSide === 'left' ? '正在亲喂：左侧' : '正在亲喂：右侧';
-      } else if (totalSec > 0) {
-        badge.textContent = `已暂停 (左${Math.ceil(timerState.leftSec/60)}分 / 右${Math.ceil(timerState.rightSec/60)}分)`;
-      } else {
-        badge.textContent = '未开始计时';
-      }
-      finishBtn.style.display = totalSec > 0 ? 'flex' : 'none';
-    }
-
-    function finishBreastTimer() {
-      clearInterval(timerInterval);
-      const totalSec = timerState.leftSec + timerState.rightSec;
-      const durationMin = Math.max(1, Math.round(totalSec / 60));
-      const lastSide = timerState.rightSec >= timerState.leftSec ? 'right' : 'left';
-      const rec = {
+    }, 60000);
+  </script>
+</body>
+</html>
